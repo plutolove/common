@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(LLVM REQUIRED CONFIG)
 find_package(Arrow REQUIRED)
 find_package(Boost REQUIRED)
+find_package(Clang REQUIRED)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/)
 file(GLOB_RECURSE SRC_FILE ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*/*.cpp)
@@ -49,4 +50,4 @@ set (REQUIRED_LLVM_LIBRARIES
         LLVMDemangle
         )
 
-target_link_libraries(patterns ${Boost_LIBRARIES} ${REQUIRED_LLVM_LIBRARIES} ${arrow_shared})
+target_link_libraries(patterns ${Boost_LIBRARIES} ${arrow_shared} clang-cpp LLVM)
