@@ -41,8 +41,7 @@ llvm::Module* compile(const char* filename) {
 int main() {
   sql::SQLJit::CompiledModule res =
       sql::SQLJit::getInstance().compileWithExtraIR(
-          "/home/meng/CLionProjects/common/data/test.ll",
-          [](llvm::Module& module) {
+          "../data/test.ll", [](llvm::Module& module) {
             auto& context = module.getContext();
             llvm::IRBuilder<> b(context);
 
