@@ -1,10 +1,11 @@
+#include <llvm/IR/Module.h>
+
 #include <iostream>
 
 #include "clang/CodeGen/CodeGenAction.h"
 #include "clang/Driver/Action.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/TextDiagnosticPrinter.h"
-#include "common/cow.h"
 #include "common/error_codes.h"
 #include "common/type_cast.h"
 #include "common/type_promation.h"
@@ -35,11 +36,18 @@ llvm::Module* compile(const char* filename) {
   return result.release();
 }
 
-
 int main() {
   // sql::SQLJit jit;
   // std::cout << ErrorCodeStr<0> << std::endl;
   // std::cout << OK << std::endl;
-  compile("/home/meng/CLionProjects/common/src/test.cpp");
+  sql::SQLJit::CompiledModule res =
+      sql::SQLJit::getInstance().compileWithExtraIR(
+          "/home/meng/CLionProjects/common/build/test.ll",
+          [](llvm::Module& m) {});
+  for (auto& kv : res.function_name_to_symbol) {
+    std::cout << "name: " << kv.first << "\t addr: " << kv.second << std::endl;
+    auto* func = reinterpret_cast<int (*)()>(kv.second);
+    std::cout << "res: " << func() << std::endl;
+  }
   return 0;
 }
