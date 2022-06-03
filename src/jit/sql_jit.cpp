@@ -251,11 +251,21 @@ class JITSymbolResolver : public llvm::LegacyJITSymbolResolver {
 
   llvm::JITSymbol findSymbol(const std::string &Name) override {
     auto address_it = symbol_name_to_symbol_address.find(Name);
+    bool is_dyl = false;
     if (address_it == symbol_name_to_symbol_address.end()) {
       std::cout << "symbol not found: " << Name << std::endl;
+      is_dyl = true;
     }
 
-    uint64_t symbol_address = reinterpret_cast<uint64_t>(address_it->second);
+    uint64_t symbol_address = 0;
+    if (is_dyl) {
+      symbol_address = reinterpret_cast<uint64_t>(
+          llvm::sys::DynamicLibrary::SearchForAddressOfSymbol(Name));
+      std::cout << "llvm::sys::DynamicLibrary::SearchForAddressOfSymbol:"
+                << Name << " addr: " << symbol_address << std::endl;
+    } else {
+      symbol_address = reinterpret_cast<uint64_t>(address_it->second);
+    }
     auto jit_symbol =
         llvm::JITSymbol(symbol_address, llvm::JITSymbolFlags::None);
 
@@ -439,24 +449,29 @@ std::unique_ptr<llvm::TargetMachine> SQLJit::getTargetMachine() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
     std::string error;
-    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib64/ld-linux-x86-64.so.2", &error)) {
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib/gcc/x86_64-pc-linux-gnu/10.3.0/libstdc++.so.6.0.28",
+            &error)) {
       std::cout << "load lib c++ fail: " << error << std::endl;
     }
-    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib/libc.so.6", &error)) {
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently("/usr/lib/libc.so.6",
+                                                          &error)) {
       std::cout << "load lib c++ fail: " << error << std::endl;
     }
-    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib/libm.so.6", &error)) {
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently("/usr/lib/libm.so.6",
+                                                          &error)) {
       std::cout << "load lib c++ fail: " << error << std::endl;
     }
-    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
             "/usr/lib/libgcc_s.so.1", &error)) {
       std::cout << "load lib c++ fail: " << error << std::endl;
     }
-    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib/libstdc++.so", &error)) {
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib64/ld-linux-x86-64.so.2", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
+    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/home/meng/CLionProjects/common/data/librun.so", &error)) {
       std::cout << "load lib c++ fail: " << error << std::endl;
     }
   });
