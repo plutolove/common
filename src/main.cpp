@@ -76,5 +76,12 @@ int main() {
     std::cout << "res: " << func() << std::endl;
     // std::cout << val << std::endl;
   }
+  std::set<int> s;
+  auto* func = reinterpret_cast<void (*)(std::set<int>*)>(
+      res.function_name_to_symbol["_Z8set_testPSt3setIiSt4lessIiESaIiEE"]);
+  func(&s);
+  for (auto& v : s) {
+    std::cout << v << std::endl;
+  }
   return 0;
 }
