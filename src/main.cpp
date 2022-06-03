@@ -42,7 +42,7 @@ int main() {
   // std::cout << OK << std::endl;
   sql::SQLJit::CompiledModule res =
       sql::SQLJit::getInstance().compileWithExtraIR(
-          "/home/meng/CLionProjects/common/build/test.ll",
+          "/home/meng/CLionProjects/common/data/test.ll",
           [](llvm::Module& m) {});
   for (auto& kv : res.function_name_to_symbol) {
     std::cout << "name: " << kv.first << "\t addr: " << kv.second << std::endl;

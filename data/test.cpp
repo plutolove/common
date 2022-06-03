@@ -1,5 +1,6 @@
 #include <iostream>
+extern int run_lib();
 int mmmax() {
-  std::cout << "running ---------------" << std::endl;
-  return 2343 * 45;
+  std::cout << "--------------- run test" << std::endl;
+  return 2 + run_lib();
 }

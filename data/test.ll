@@ -23,7 +23,7 @@ target triple = "x86_64-pc-linux-gnu"
 @_ZStL8__ioinit = internal global %"class.std::ios_base::Init" zeroinitializer, align 1
 @__dso_handle = external hidden global i8
 @_ZSt4cout = external global %"class.std::basic_ostream", align 8
-@.str = private unnamed_addr constant [24 x i8] c"running ---------------\00", align 1
+@.str = private unnamed_addr constant [25 x i8] c"--------------- run test\00", align 1
 @llvm.global_ctors = appending global [1 x { i32, void ()*, i8* }] [{ i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_test.cpp, i8* null }]
 
 ; Function Attrs: noinline sspstrong uwtable
@@ -43,9 +43,11 @@ declare i32 @__cxa_atexit(void (i8*)*, i8*, i8*) #3
 
 ; Function Attrs: mustprogress noinline optnone sspstrong uwtable
 define dso_local i32 @_Z5mmmaxv() #4 {
-  %1 = call nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* getelementptr inbounds ([24 x i8], [24 x i8]* @.str, i64 0, i64 0))
+  %1 = call nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8) @_ZSt4cout, i8* getelementptr inbounds ([25 x i8], [25 x i8]* @.str, i64 0, i64 0))
   %2 = call nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEPFRSoS_E(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8) %1, %"class.std::basic_ostream"* (%"class.std::basic_ostream"*)* @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_)
-  ret i32 105435
+  %3 = call i32 @_Z7run_libv()
+  %4 = add nsw i32 2, %3
+  ret i32 %4
 }
 
 declare nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8), i8*) #1
@@ -53,6 +55,8 @@ declare nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZStlsI
 declare nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZNSolsEPFRSoS_E(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8), %"class.std::basic_ostream"* (%"class.std::basic_ostream"*)*) #1
 
 declare nonnull align 8 dereferenceable(8) %"class.std::basic_ostream"* @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(%"class.std::basic_ostream"* nonnull align 8 dereferenceable(8)) #1
+
+declare i32 @_Z7run_libv() #1
 
 ; Function Attrs: noinline sspstrong uwtable
 define internal void @_GLOBAL__sub_I_test.cpp() #0 section ".text.startup" {
