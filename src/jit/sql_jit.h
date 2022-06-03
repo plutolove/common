@@ -27,6 +27,15 @@ class SQLJit {
   SQLJit();
   ~SQLJit();
 
+  static SQLJit &getInstance() {
+    static SQLJit _instance;
+    return _instance;
+  }
+
+  CompiledModule compileWithExtraIR(
+      const std::string &path,
+      std::function<void(llvm::Module &)> compile_function);
+
   CompiledModule compileModule(
       std::function<void(llvm::Module &)> compile_function);
   void deleteCompiledModule(const CompiledModule &module_info);

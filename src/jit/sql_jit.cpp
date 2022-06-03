@@ -1,5 +1,3 @@
-#include "sql_jit.h"
-
 #include <llvm/Analysis/TargetTransformInfo.h>
 #include <llvm/ExecutionEngine/JITEventListener.h>
 #include <llvm/ExecutionEngine/JITSymbol.h>
@@ -12,10 +10,12 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/IR/Type.h>
+#include <llvm/IRReader/IRReader.h>
 #include <llvm/MC/SubtargetFeature.h>
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/SmallVectorMemoryBuffer.h>
+#include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
@@ -23,9 +23,12 @@
 #include <unistd.h>
 
 #include <boost/noncopyable.hpp>
+#include <fstream>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+
+#include "sql_jit.h"
 namespace sql {
 
 size_t GetPageSize() { return sysconf(_SC_PAGESIZE); }
@@ -249,7 +252,7 @@ class JITSymbolResolver : public llvm::LegacyJITSymbolResolver {
   llvm::JITSymbol findSymbol(const std::string &Name) override {
     auto address_it = symbol_name_to_symbol_address.find(Name);
     if (address_it == symbol_name_to_symbol_address.end()) {
-      std::cout << "symbol not found" << std::endl;
+      std::cout << "symbol not found: " << Name << std::endl;
     }
 
     uint64_t symbol_address = reinterpret_cast<uint64_t>(address_it->second);
@@ -280,6 +283,21 @@ SQLJit::SQLJit()
 }
 
 SQLJit::~SQLJit() = default;
+
+SQLJit::CompiledModule SQLJit::compileWithExtraIR(
+    const std::string &path,
+    std::function<void(llvm::Module &)> compile_function) {
+  std::lock_guard<std::mutex> lock(jit_lock);
+
+  llvm::SMDiagnostic error;
+  // load ir
+  auto module = llvm::parseIRFile(path, error, context);
+  compile_function(*module);
+  auto module_info = compileModule(std::move(module));
+
+  ++current_module_key;
+  return module_info;
+}
 
 SQLJit::CompiledModule SQLJit::compileModule(
     std::function<void(llvm::Module &)> compile_function) {
@@ -420,7 +438,27 @@ std::unique_ptr<llvm::TargetMachine> SQLJit::getTargetMachine() {
   std::call_once(llvm_target_initialized, []() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
-    llvm::sys::DynamicLibrary::LoadLibraryPermanently(nullptr);
+    std::string error;
+    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib64/ld-linux-x86-64.so.2", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
+    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib/libc.so.6", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
+    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib/libm.so.6", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
+    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib/libgcc_s.so.1", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
+    if (not llvm::sys::DynamicLibrary::LoadLibraryPermanently(
+            "/usr/lib/libstdc++.so", &error)) {
+      std::cout << "load lib c++ fail: " << error << std::endl;
+    }
   });
 
   std::string error;
