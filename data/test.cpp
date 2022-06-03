@@ -1,6 +1,6 @@
-#include <iostream>
+#include <string>
 extern int run_lib();
-int mmmax() {
-  std::cout << "--------------- run test" << std::endl;
+int mmmax(std::string* x) {
+  *x = "xxxxxxxxxxxxx";
   return 2 + run_lib();
 }
