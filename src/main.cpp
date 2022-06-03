@@ -46,8 +46,10 @@ int main() {
           [](llvm::Module& m) {});
   for (auto& kv : res.function_name_to_symbol) {
     std::cout << "name: " << kv.first << "\t addr: " << kv.second << std::endl;
-    auto* func = reinterpret_cast<int (*)()>(kv.second);
-    std::cout << "res: " << func() << std::endl;
+    auto* func = reinterpret_cast<int (*)(std::string*)>(kv.second);
+    std::string val = "x";
+    std::cout << "res: " << func(&val) << std::endl;
+    std::cout << val << std::endl;
   }
   return 0;
 }
