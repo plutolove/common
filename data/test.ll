@@ -7,22 +7,29 @@ target triple = "x86_64-pc-linux-gnu"
 %"struct.std::__cxx11::basic_string<char>::_Alloc_hider" = type { i8* }
 %union.anon = type { i64, [8 x i8] }
 
-@.str = private unnamed_addr constant [14 x i8] c"xxxxxxxxxxxxx\00", align 1
+@.str = private unnamed_addr constant [22 x i8] c"345546rdtfdfg345fgthd\00", align 1
 
 ; Function Attrs: mustprogress noinline optnone sspstrong uwtable
-define dso_local i32 @_Z5mmmaxPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE(%"class.std::__cxx11::basic_string"* %0) #0 {
+define dso_local i32 @_Z5mmmaxv() #0 {
+  %1 = call i32 @_Z7run_libv()
+  %2 = add nsw i32 2, %1
+  ret i32 %2
+}
+
+declare i32 @_Z7run_libv() #1
+
+; Function Attrs: mustprogress noinline optnone sspstrong uwtable
+define dso_local i32 @_Z11test_stringPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE(%"class.std::__cxx11::basic_string"* %0) #0 {
   %2 = alloca %"class.std::__cxx11::basic_string"*, align 8
   store %"class.std::__cxx11::basic_string"* %0, %"class.std::__cxx11::basic_string"** %2, align 8
   %3 = load %"class.std::__cxx11::basic_string"*, %"class.std::__cxx11::basic_string"** %2, align 8
-  %4 = call nonnull align 8 dereferenceable(32) %"class.std::__cxx11::basic_string"* @_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEPKc(%"class.std::__cxx11::basic_string"* nonnull align 8 dereferenceable(32) %3, i8* getelementptr inbounds ([14 x i8], [14 x i8]* @.str, i64 0, i64 0))
+  %4 = call nonnull align 8 dereferenceable(32) %"class.std::__cxx11::basic_string"* @_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEPKc(%"class.std::__cxx11::basic_string"* nonnull align 8 dereferenceable(32) %3, i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str, i64 0, i64 0))
   %5 = call i32 @_Z7run_libv()
   %6 = add nsw i32 2, %5
   ret i32 %6
 }
 
 declare nonnull align 8 dereferenceable(32) %"class.std::__cxx11::basic_string"* @_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEPKc(%"class.std::__cxx11::basic_string"* nonnull align 8 dereferenceable(32), i8*) #1
-
-declare i32 @_Z7run_libv() #1
 
 attributes #0 = { mustprogress noinline optnone sspstrong uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
 attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
