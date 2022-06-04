@@ -254,7 +254,7 @@ class JITSymbolResolver : public llvm::LegacyJITSymbolResolver {
     auto symbol_address = reinterpret_cast<uint64_t>(
         llvm::sys::DynamicLibrary::SearchForAddressOfSymbol(Name));
     auto jit_symbol =
-        llvm::JITSymbol(symbol_address, llvm::JITSymbolFlags::Exported);
+        llvm::JITSymbol(symbol_address, llvm::JITSymbolFlags::None);
     return jit_symbol;
   }
 
