@@ -133,6 +133,7 @@ $_ZNSt23_Rb_tree_const_iteratorIiEC2ERKSt17_Rb_tree_iteratorIiE = comdat any
 $_ZSt7forwardIRbEOT_RNSt16remove_referenceIS1_E4typeE = comdat any
 
 @.str = private unnamed_addr constant [22 x i8] c"345546rdtfdfg345fgthd\00", align 1
+@.str.1 = private unnamed_addr constant [22 x i8] c"--------------------\0A\00", align 1
 
 ; Function Attrs: mustprogress noinline optnone sspstrong uwtable
 define dso_local i32 @_Z5mmmaxv() #0 {
@@ -163,38 +164,41 @@ define dso_local void @_Z8set_testPSt3setIiSt4lessIiESaIiEE(%"class.std::set"* %
   %4 = alloca i32, align 4
   %5 = alloca %"struct.std::pair", align 8
   store %"class.std::set"* %0, %"class.std::set"** %2, align 8
+  %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.1, i64 0, i64 0))
   store i64 0, i64* %3, align 8
-  br label %6
+  br label %7
 
-6:                                                ; preds = %19, %1
-  %7 = load i64, i64* %3, align 8
-  %8 = icmp ult i64 %7, 10
-  br i1 %8, label %9, label %22
+7:                                                ; preds = %20, %1
+  %8 = load i64, i64* %3, align 8
+  %9 = icmp ult i64 %8, 10
+  br i1 %9, label %10, label %23
 
-9:                                                ; preds = %6
-  %10 = load %"class.std::set"*, %"class.std::set"** %2, align 8
-  %11 = load i64, i64* %3, align 8
-  %12 = trunc i64 %11 to i32
-  store i32 %12, i32* %4, align 4
-  %13 = call { %"struct.std::_Rb_tree_node_base"*, i8 } @_ZNSt3setIiSt4lessIiESaIiEE6insertEOi(%"class.std::set"* nonnull align 8 dereferenceable(48) %10, i32* nonnull align 4 dereferenceable(4) %4)
-  %14 = bitcast %"struct.std::pair"* %5 to { %"struct.std::_Rb_tree_node_base"*, i8 }*
-  %15 = getelementptr inbounds { %"struct.std::_Rb_tree_node_base"*, i8 }, { %"struct.std::_Rb_tree_node_base"*, i8 }* %14, i32 0, i32 0
-  %16 = extractvalue { %"struct.std::_Rb_tree_node_base"*, i8 } %13, 0
-  store %"struct.std::_Rb_tree_node_base"* %16, %"struct.std::_Rb_tree_node_base"** %15, align 8
-  %17 = getelementptr inbounds { %"struct.std::_Rb_tree_node_base"*, i8 }, { %"struct.std::_Rb_tree_node_base"*, i8 }* %14, i32 0, i32 1
-  %18 = extractvalue { %"struct.std::_Rb_tree_node_base"*, i8 } %13, 1
-  store i8 %18, i8* %17, align 8
-  br label %19
+10:                                               ; preds = %7
+  %11 = load %"class.std::set"*, %"class.std::set"** %2, align 8
+  %12 = load i64, i64* %3, align 8
+  %13 = trunc i64 %12 to i32
+  store i32 %13, i32* %4, align 4
+  %14 = call { %"struct.std::_Rb_tree_node_base"*, i8 } @_ZNSt3setIiSt4lessIiESaIiEE6insertEOi(%"class.std::set"* nonnull align 8 dereferenceable(48) %11, i32* nonnull align 4 dereferenceable(4) %4)
+  %15 = bitcast %"struct.std::pair"* %5 to { %"struct.std::_Rb_tree_node_base"*, i8 }*
+  %16 = getelementptr inbounds { %"struct.std::_Rb_tree_node_base"*, i8 }, { %"struct.std::_Rb_tree_node_base"*, i8 }* %15, i32 0, i32 0
+  %17 = extractvalue { %"struct.std::_Rb_tree_node_base"*, i8 } %14, 0
+  store %"struct.std::_Rb_tree_node_base"* %17, %"struct.std::_Rb_tree_node_base"** %16, align 8
+  %18 = getelementptr inbounds { %"struct.std::_Rb_tree_node_base"*, i8 }, { %"struct.std::_Rb_tree_node_base"*, i8 }* %15, i32 0, i32 1
+  %19 = extractvalue { %"struct.std::_Rb_tree_node_base"*, i8 } %14, 1
+  store i8 %19, i8* %18, align 8
+  br label %20
 
-19:                                               ; preds = %9
-  %20 = load i64, i64* %3, align 8
-  %21 = add i64 %20, 1
-  store i64 %21, i64* %3, align 8
-  br label %6, !llvm.loop !6
+20:                                               ; preds = %10
+  %21 = load i64, i64* %3, align 8
+  %22 = add i64 %21, 1
+  store i64 %22, i64* %3, align 8
+  br label %7, !llvm.loop !6
 
-22:                                               ; preds = %6
+23:                                               ; preds = %7
   ret void
 }
+
+declare i32 @printf(i8*, ...) #1
 
 ; Function Attrs: mustprogress noinline optnone sspstrong uwtable
 define linkonce_odr dso_local { %"struct.std::_Rb_tree_node_base"*, i8 } @_ZNSt3setIiSt4lessIiESaIiEE6insertEOi(%"class.std::set"* nonnull align 8 dereferenceable(48) %0, i32* nonnull align 4 dereferenceable(4) %1) #0 comdat align 2 {
