@@ -5,6 +5,7 @@
 #include <set>
 
 #include "common/error_codes.h"
+#include "common/exception.h"
 #include "common/type_cast.h"
 #include "common/type_promation.h"
 #include "fmt/format.h"

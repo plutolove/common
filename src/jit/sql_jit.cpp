@@ -28,7 +28,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "common/exception.h"
+#include "fmt/format.h"
 #include "sql_jit.h"
+
 namespace sql {
 
 size_t GetPageSize() { return sysconf(_SC_PAGESIZE); }
@@ -46,7 +49,8 @@ class JITCompiler {
                       [&](const llvm::ErrorInfoBase &error_info) {
                         error_message = error_info.message();
                       });
-      std::cout << "Cannot materialize module: " << error_message << std::endl;
+      throw common::Exception(-1, "Cannot materialize module: {}",
+                              error_message);
     }
 
     llvm::SmallVector<char, 4096> object_buffer;
@@ -57,7 +61,8 @@ class JITCompiler {
 
     if (target_machine.addPassesToEmitMC(pass_manager, machine_code_context,
                                          object_stream)) {
-      std::cout << "MachineCode is not supported for the platform" << std::endl;
+      throw common::Exception(-1,
+                              "MachineCode is not supported for the platform");
     }
 
     pass_manager.run(module);
@@ -256,7 +261,7 @@ class JITSymbolResolver : public llvm::LegacyJITSymbolResolver {
   llvm::JITSymbol findSymbol(const std::string &Name) override {
     auto address_it = symbol_name_to_symbol_address.find(Name);
     if (address_it == symbol_name_to_symbol_address.end()) {
-      std::cout << "symbol not found: " << Name << std::endl;
+      throw common::Exception(-1, "symbol not found: {}", Name);
     }
 
     uint64_t symbol_address = reinterpret_cast<uint64_t>(address_it->second);
@@ -338,8 +343,9 @@ SQLJit::CompiledModule SQLJit::compileModule(
                     [&](const llvm::ErrorInfoBase &error_info) {
                       error_message = error_info.message();
                     });
-    std::cout << "Cannot create object file from compiled buffer: "
-              << error_message << std::endl;
+    throw common::Exception(
+        -1, "Cannot create object file from compiled buffer: {}",
+        error_message);
   }
 
   std::unique_ptr<JITModuleMemoryManager> module_memory_manager =
@@ -363,7 +369,8 @@ SQLJit::CompiledModule SQLJit::compileModule(
     auto jit_symbol = dynamic_linker.getSymbol(mangled_name);
 
     if (!jit_symbol) {
-      std::cout << "not found symbol {} after compilation" << std::endl;
+      throw common::Exception(-1, "not found symbol {} after compilation",
+                              function_name);
     }
 
     auto *jit_symbol_address =
@@ -388,7 +395,7 @@ void SQLJit::deleteCompiledModule(const SQLJit::CompiledModule &module) {
 
   auto module_it = module_identifier_to_memory_manager.find(module.identifier);
   if (module_it == module_identifier_to_memory_manager.end()) {
-    std::cout << "module not found" << std::endl;
+    throw common::Exception(-1, "module not found: {}", module.identifier);
   }
   module_identifier_to_memory_manager.erase(module_it);
   compiled_code_size.fetch_sub(module.size, std::memory_order_relaxed);
@@ -437,35 +444,24 @@ void SQLJit::runOptimizationPassesOnModule(llvm::Module &module) const {
 }
 
 std::unique_ptr<llvm::TargetMachine> SQLJit::getTargetMachine() {
+  static std::vector<std::string> dylib_path{
+      "/usr/lib/gcc/x86_64-pc-linux-gnu/10.3.0/libstdc++.so.6.0.28",
+      "/usr/lib/libc.so.6",
+      "/usr/lib/libm.so.6",
+      "/usr/lib/libgcc_s.so.1",
+      "/usr/lib64/ld-linux-x86-64.so.2",
+      "/home/meng/CLionProjects/common/data/librun.so"};
   static std::once_flag llvm_target_initialized;
   std::call_once(llvm_target_initialized, []() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
     std::string error;
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib/gcc/x86_64-pc-linux-gnu/10.3.0/libstdc++.so.6.0.28",
-            &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
-    }
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently("/usr/lib/libc.so.6",
-                                                          &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
-    }
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently("/usr/lib/libm.so.6",
-                                                          &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
-    }
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib/libgcc_s.so.1", &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
-    }
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/usr/lib64/ld-linux-x86-64.so.2", &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
-    }
-    if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(
-            "/home/meng/CLionProjects/common/data/librun.so", &error)) {
-      std::cout << "load lib c++ fail: " << error << std::endl;
+    for (auto lib_path : dylib_path) {
+      if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(lib_path.c_str(),
+                                                            &error)) {
+        std::cout << fmt::format("load dylib {} fail, error msg: {}", lib_path,
+                                 error);
+      }
     }
   });
 
@@ -474,7 +470,7 @@ std::unique_ptr<llvm::TargetMachine> SQLJit::getTargetMachine() {
   auto triple = llvm::sys::getProcessTriple();
   const auto *target = llvm::TargetRegistry::lookupTarget(triple, error);
   if (!target) {
-    std::cout << "Cannot find target triple" << std::endl;
+    throw common::Exception(-1, "Cannot find target triple");
   }
 
   llvm::SubtargetFeatures features;
@@ -490,7 +486,8 @@ std::unique_ptr<llvm::TargetMachine> SQLJit::getTargetMachine() {
       llvm::CodeGenOpt::Aggressive, jit);
 
   if (!target_machine) {
-    std::cout << "Cannot create target machine" << std::endl;
+    throw common::Exception(-1, "Cannot create target machine: {}",
+                            features.getString());
   }
 
   return std::unique_ptr<llvm::TargetMachine>(target_machine);

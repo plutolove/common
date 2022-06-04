@@ -11,5 +11,6 @@ constexpr inline std::string_view ErrorCodeStr;
   constexpr inline std::string_view ErrorCodeStr<VALUE> = #NAME;
 
 ERROR_CODE(0, OK);
+ERROR_CODE(-1, ERROR);
 
 }  // namespace ErrorCode
